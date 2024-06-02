@@ -31,7 +31,7 @@ license = "LGPL-3.0-only"
 url = "https://www.github.com/npentrel/tildagon-snake"
 
 # Description of your app.  Maximum 140 characters!
-description = "Recreation to the classic Window 3.1 screensaver Mystify."
+description = "Recreation of the classic Window 3.1 screensaver Mystify."
 
 # Version number of your app.  If you push a commit where this number is
 # increased, we interpret this as a new version being released.
