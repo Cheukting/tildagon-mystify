@@ -28,7 +28,7 @@ author = "Cheukting"
 license = "LGPL-3.0-only"
 
 # URL to the repository of your app.
-url = "https://www.github.com/npentrel/tildagon-snake"
+url = "https://github.com/Cheukting/tildagon-mystify"
 
 # Description of your app.  Maximum 140 characters!
 description = "Recreation of the classic Window 3.1 screensaver Mystify."
