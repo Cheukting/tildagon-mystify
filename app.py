@@ -16,7 +16,9 @@ class Polygon():
             self.color = [random.random(), random.random(), random.random()]
         else:
             self.color = color
-        self.color_change = [1, 1, 1]
+        self.color_change = [random.choice([1, -1]),
+                random.choice([1, -1]),
+                random.choice([1, -1])]
 
         # init points
         if points is None:
