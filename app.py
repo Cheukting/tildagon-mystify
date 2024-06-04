@@ -6,17 +6,43 @@ import random
 from events.input import Buttons, BUTTON_TYPES
 
 class Polygon():
-    def __init__(self, points=None):
-        self.color = [random.random(), random.random(), random.random()]
+    def __init__(self,
+            points=None,
+            color=None,
+            speed=0.05):
+
+        # init color
+        if color is None:
+            self.color = [random.random(), random.random(), random.random()]
+        else:
+            self.color = color
         self.color_change = [1, 1, 1]
+
+        # init points
         if points is None:
             self.points = []
+            for _ in range(4):
+                ran_x = int((random.random()-0.5)*200)
+                ran_y = int((random.random()-0.5)*200)
+                self.points.append([ran_x, ran_y])
         else:
             self.points = points
+
+        # init targets
+        self.targets = []
         for _ in range(4):
             ran_x = int((random.random()-0.5)*200)
             ran_y = int((random.random()-0.5)*200)
-            self.points.append([ran_x, ran_y])
+            self.targets.append([ran_x, ran_y])
+
+        # init steps
+        self.speed = speed
+        self.steps = []
+        for i in range(4):
+            x_diff = (self.targets[i][0] - self.points[i][0])*speed
+            y_diff = (self.targets[i][1] - self.points[i][1])*speed
+            self.steps.append([x_diff, y_diff])
+
 
     def __str__(self):
         return str(self.points)
@@ -24,46 +50,24 @@ class Polygon():
     def __print__(self):
         return str(self.points)
 
-    def diff(self, other):
-        result = []
-        for i in range(4):
-            x_diff = (self.points[i][0] - other.points[i][0])
-            y_diff = (self.points[i][1] - other.points[i][1])
-            result.append([x_diff, y_diff])
-        return Polygon(result)
-
-    def div(self, num):
-        result = []
-        for i in range(4):
-            x = self.points[i][0]/num
-            y = self.points[i][1]/num
-            result.append([x, y])
-        return Polygon(result)
-
 class MystifyApp(app.App):
     def __init__(self):
         self.button_states = Buttons(self)
 
         self.num_of_poly = 2
-        self.step_div = 20
 
         self.polygons=[]
         for _ in range(self.num_of_poly):
-            self.polygons.append(Polygon())
-
-        self.future_polygons = []
-        for _ in range(self.num_of_poly):
-            self.future_polygons.append(Polygon())
-
-        self.steps = []
-        for i in range(self.num_of_poly):
-            self.steps.append(self.future_polygons[i].diff(self.polygons[i]).div(self.step_div))
+            polygon = Polygon()
+            self.polygons.append(polygon)
 
     def update(self, delta):
         if self.button_states.get(BUTTON_TYPES["CANCEL"]):
             self.minimise()
 
-    def update_polygon(self, polygon, future_polygon, steps):
+    def update_polygon(self, polygon):
+
+        # update color
         for i in range(3):
             polygon.color[i] += 0.01 * polygon.color_change[i]
             if polygon.color[i] >= 1:
@@ -73,19 +77,20 @@ class MystifyApp(app.App):
                 polygon.color_change[i] *= -1
                 polygon.color[i] = 0
 
+        # update point pos
         for i in range(4):
-            x_diff = (future_polygon.points[i][0] - polygon.points[i][0])
-            y_diff = (future_polygon.points[i][1] - polygon.points[i][1])
-            if abs(x_diff) < abs(steps.points[i][0]) or abs(y_diff) < abs(steps.points[i][1]):
+            x_diff = (polygon.targets[i][0] - polygon.points[i][0])
+            y_diff = (polygon.targets[i][1] - polygon.points[i][1])
+            if abs(x_diff) < abs(polygon.steps[i][0]) or abs(y_diff) < abs(polygon.steps[i][1]):
                 # update target
                 ran_x = int((random.random()-0.5)*200)
                 ran_y = int((random.random()-0.5)*200)
-                future_polygon.points[i] = [ran_x, ran_y]
-                steps.points[i][0] = (ran_x - polygon.points[i][0])/self.step_div
-                steps.points[i][1] = (ran_y - polygon.points[i][1])/self.step_div
+                polygon.targets[i] = [ran_x, ran_y]
+                polygon.steps[i][0] = (ran_x - polygon.points[i][0])*polygon.speed
+                polygon.steps[i][1] = (ran_y - polygon.points[i][1])*polygon.speed
             else:
-                polygon.points[i][0] += steps.points[i][0]
-                polygon.points[i][1] += steps.points[i][1]
+                polygon.points[i][0] += polygon.steps[i][0]
+                polygon.points[i][1] += polygon.steps[i][1]
 
 
     async def run(self, render_update):
@@ -96,10 +101,10 @@ class MystifyApp(app.App):
             await asyncio.sleep(0.1)
 
             for i in range(self.num_of_poly):
+                # self.echos1[i] = self.polygons[i].snap()
+                # self.echos2[i] = self.echos1[i].snap()
                 self.update_polygon(
-                    self.polygons[i],
-                    self.future_polygons[i],
-                    self.steps[i])
+                    self.polygons[i])
             await render_update()
 
     def draw_line(self, ctx, start, finish, color):
