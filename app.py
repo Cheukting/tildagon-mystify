@@ -7,7 +7,8 @@ from events.input import Buttons, BUTTON_TYPES
 
 class Polygon():
     def __init__(self, points=None):
-        self.color = (random.random(), random.random(), random.random())
+        self.color = [random.random(), random.random(), random.random()]
+        self.color_change = [1, 1, 1]
         if points is None:
             self.points = []
         else:
@@ -61,11 +62,17 @@ class MystifyApp(app.App):
     def update(self, delta):
         if self.button_states.get(BUTTON_TYPES["CANCEL"]):
             self.minimise()
-    # def __init__(self):
-    #     super().__init__()
-    #     self.color = (1, 0, 0)
 
     def update_polygon(self, polygon, future_polygon, steps):
+        for i in range(3):
+            polygon.color[i] += 0.01 * polygon.color_change[i]
+            if polygon.color[i] >= 1:
+                polygon.color_change[i] *= -1
+                polygon.color[i] = 1
+            elif polygon.color[i] <= 0:
+                polygon.color_change[i] *= -1
+                polygon.color[i] = 0
+
         for i in range(4):
             x_diff = (future_polygon.points[i][0] - polygon.points[i][0])
             y_diff = (future_polygon.points[i][1] - polygon.points[i][1])
@@ -93,7 +100,6 @@ class MystifyApp(app.App):
                     self.polygons[i],
                     self.future_polygons[i],
                     self.steps[i])
-            # self.polygons[0].color = (random.random(), random.random(), random.random())
             await render_update()
 
     def draw_line(self, ctx, start, finish, color):
@@ -113,7 +119,5 @@ class MystifyApp(app.App):
         for polygon in self.polygons:
             self.draw_poly(ctx, polygon)
         ctx.restore()
-
-        # self.draw_overlays(ctx)
 
 __app_export__ = MystifyApp
