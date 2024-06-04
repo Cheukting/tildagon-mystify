@@ -43,7 +43,6 @@ class Polygon():
             y_diff = (self.targets[i][1] - self.points[i][1])*speed
             self.steps.append([x_diff, y_diff])
 
-
     def __str__(self):
         return str(self.points)
 
@@ -51,23 +50,49 @@ class Polygon():
         return str(self.points)
 
 class MystifyApp(app.App):
-    def __init__(self):
+    def __init__(self, num_of_poly = None, poly_speed = None):
         self.button_states = Buttons(self)
 
-        self.num_of_poly = 2
+        if poly_speed is None:
+            self.poly_speed = 0.05
+        else:
+            self.poly_speed = poly_speed
+
+        if num_of_poly is None:
+            self.num_of_poly = 2
+        else:
+            self.num_of_poly = num_of_poly
 
         self.polygons=[]
         for _ in range(self.num_of_poly):
-            polygon = Polygon()
-            self.polygons.append(polygon)
+            self.polygons.append(Polygon(speed=self.poly_speed))
 
     def update(self, delta):
         if self.button_states.get(BUTTON_TYPES["CANCEL"]):
             self.button_states.clear()
             self.minimise()
-        for i in range(self.num_of_poly):
-            self.update_polygon(
-                self.polygons[i])
+        elif self.button_states.get(BUTTON_TYPES["CONFIRM"]):
+            self.button_states.clear()
+            self.__init__(self.num_of_poly, self.poly_speed)
+        elif self.button_states.get(BUTTON_TYPES["UP"]):
+            self.button_states.clear()
+            if self.num_of_poly < 10:
+                self.__init__(self.num_of_poly+1, self.poly_speed)
+        elif self.button_states.get(BUTTON_TYPES["DOWN"]):
+            self.button_states.clear()
+            if self.num_of_poly > 1:
+                self.__init__(self.num_of_poly-1, self.poly_speed)
+        elif self.button_states.get(BUTTON_TYPES["LEFT"]):
+            self.button_states.clear()
+            if self.poly_speed > 0.01:
+                self.__init__(self.num_of_poly, self.poly_speed-0.01)
+        elif self.button_states.get(BUTTON_TYPES["RIGHT"]):
+            self.button_states.clear()
+            if self.poly_speed < 0.09:
+                self.__init__(self.num_of_poly, self.poly_speed+0.01)
+
+        for polygon in self.polygons:
+            self.update_polygon(polygon)
 
     def update_polygon(self, polygon):
         # update color
