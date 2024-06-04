@@ -63,10 +63,13 @@ class MystifyApp(app.App):
 
     def update(self, delta):
         if self.button_states.get(BUTTON_TYPES["CANCEL"]):
+            self.button_states.clear()
             self.minimise()
+        for i in range(self.num_of_poly):
+            self.update_polygon(
+                self.polygons[i])
 
     def update_polygon(self, polygon):
-
         # update color
         for i in range(3):
             polygon.color[i] += 0.01 * polygon.color_change[i]
@@ -91,21 +94,6 @@ class MystifyApp(app.App):
             else:
                 polygon.points[i][0] += polygon.steps[i][0]
                 polygon.points[i][1] += polygon.steps[i][1]
-
-
-    async def run(self, render_update):
-        # Render initial state
-        await render_update()
-
-        while True:
-            await asyncio.sleep(0.1)
-
-            for i in range(self.num_of_poly):
-                # self.echos1[i] = self.polygons[i].snap()
-                # self.echos2[i] = self.echos1[i].snap()
-                self.update_polygon(
-                    self.polygons[i])
-            await render_update()
 
     def draw_line(self, ctx, start, finish, color):
         ctx.rgb(color[0], color[1], color[2]).begin_path()
